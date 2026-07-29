@@ -40,7 +40,7 @@ window.GR = window.GR || {};
       this.phase = this.countdownLen > 0 ? 'countdown' : 'running';
       this.accumulator = 0;
       this.finishOrder = null;
-      this.world = { track: this.track, cars: this.cars, rng: this.rng, time: 0 };
+      this.world = { track: this.track, cars: this.cars, rng: this.rng, time: 0, collisionCars: this.collisionCars };
     }
 
     /** Advance the simulation by `elapsed` seconds of *race* time. */
@@ -66,6 +66,7 @@ window.GR = window.GR || {};
 
       this.time += dt;
       this.world.time = this.time;
+      this.world.collisionCars = this.collisionCars;
 
       for (const car of this.cars) car.step(this.world, dt);
       if (this.collisionCars !== false) GR.car.resolveCarContacts(this.cars);

@@ -648,11 +648,11 @@
 
   function addDemoBots() {
     const bots = [
-      { name: 'Speed Demon', genes: { maxSpeed: 95, acceleration: 80, braking: 20, turning: 60, anticipation: 30, overtaking: 85, safety: 15, recovery: 60 } },
       { name: 'Professor Careful', genes: { maxSpeed: 35, acceleration: 45, braking: 85, turning: 40, anticipation: 80, overtaking: 20, safety: 85, recovery: 50 } },
       { name: 'Smooth Sam', genes: { maxSpeed: 65, acceleration: 60, braking: 55, turning: 35, anticipation: 70, overtaking: 45, safety: 55, recovery: 55 } },
       { name: 'Corner Cutter', genes: { maxSpeed: 70, acceleration: 70, braking: 45, turning: 75, anticipation: 55, overtaking: 65, safety: 20, recovery: 70 } },
       { name: 'Steady Eddie', genes: { maxSpeed: 55, acceleration: 55, braking: 60, turning: 50, anticipation: 60, overtaking: 40, safety: 60, recovery: 45 } },
+      { name: 'Speed Demon', genes: { maxSpeed: 95, acceleration: 80, braking: 20, turning: 60, anticipation: 30, overtaking: 85, safety: 15, recovery: 60 } },
     ];
     bots.forEach((b) => GR.storage.roster.add(b));
     renderRoster();

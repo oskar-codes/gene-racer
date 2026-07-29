@@ -106,6 +106,7 @@ window.GR = window.GR || {};
       this._wasBraking = false;
       this._prevSteer = 0;
       this._sampleAcc = 0;
+      this.wallSide = 0;
     }
 
     /* ================================================================ SENSE */
@@ -115,6 +116,7 @@ window.GR = window.GR || {};
       const cos = Math.cos(this.heading), sin = Math.sin(this.heading);
       const nx = this.x + cos * (CAR_LEN * 0.4);
       const ny = this.y + sin * (CAR_LEN * 0.4);
+      const trafficEnabled = world.collisionCars !== false;
 
       let minLeft = range, minRight = range, minFront = range;
       let carAhead = null, carAheadDist = Infinity;
@@ -123,8 +125,10 @@ window.GR = window.GR || {};
       // instead of re-testing the whole field for every single ray.
       const near = [];
       const reach = (range + 30) * (range + 30);
-      for (const other of world.cars) {
-        if (other !== this && !other.finished && U.dist2(nx, ny, other.x, other.y) <= reach) near.push(other);
+      if (trafficEnabled) {
+        for (const other of world.cars) {
+          if (other !== this && !other.finished && U.dist2(nx, ny, other.x, other.y) <= reach) near.push(other);
+        }
       }
 
       for (let i = 0; i < this.rays.length; i++) {
@@ -168,6 +172,7 @@ window.GR = window.GR || {};
       const proj = this.proj;
       const onGrass = Math.abs(proj.lateral) > track.halfWidth;
       const s = this.sensors;
+      const trafficEnabled = world.collisionCars !== false;
 
       /* --- 1. How fast may I be, given the corners ahead? --------------- */
       // "Usable" is how far off the centre line the driver is willing to place
@@ -210,11 +215,13 @@ window.GR = window.GR || {};
 
       /* --- 3. Traffic: pass, or tuck in behind? ------------------------- */
       let blocked = null, blockDist = Infinity;
-      for (const other of world.cars) {
-        if (other === this || other.finished) continue;
-        const rel = this._relative(other);
-        if (rel.ahead > 0 && rel.ahead < p.followGap * 2.2 && Math.abs(rel.side - proj.lateral) < CAR_W * 2.4) {
-          if (rel.ahead < blockDist) { blockDist = rel.ahead; blocked = other; }
+      if (trafficEnabled) {
+        for (const other of world.cars) {
+          if (other === this || other.finished) continue;
+          const rel = this._relative(other);
+          if (rel.ahead > 0 && rel.ahead < p.followGap * 2.2 && Math.abs(rel.side - proj.lateral) < CAR_W * 2.4) {
+            if (rel.ahead < blockDist) { blockDist = rel.ahead; blocked = other; }
+          }
         }
       }
       let passing = false;
@@ -465,22 +472,28 @@ window.GR = window.GR || {};
       const proj = track.project(this.x, this.y, this.hint);
       const over = Math.abs(proj.lateral) - track.wallHalf + CAR_R * 0.55;
       if (over > 0) {
-        const sgn = U.sign(proj.lateral) || 1;
-        const i = proj.index;
-        // Push back inside the wall...
-        this.x -= track.nx[i] * sgn * (over + 0.5);
-        this.y -= track.ny[i] * sgn * (over + 0.5);
+        const i = this.hint;
+        const baseLat = (this.x - track.px[i]) * track.nx[i] + (this.y - track.py[i]) * track.ny[i];
+        const sgn = this.wallSide || U.sign(baseLat) || U.sign(proj.lateral) || 1;
+        const safeLat = sgn * (track.wallHalf - CAR_R * 0.55 - 0.75);
+        const safe = track.pointAt(i, safeLat);
+        // Snap to a stable point just inside the wall boundary.
+        this.x = safe.x;
+        this.y = safe.y;
         // ...bleed off speed and nudge the nose back toward the road.
         if (this.hitFlash > 0) {
           this.speed *= 0.97;                                // still scraping
-          this.heading = U.lerp(this.heading, proj.ang - sgn * 0.12, 0.10);
+          this.heading = U.lerp(this.heading, Math.atan2(track.ty[i], track.tx[i]) - sgn * 0.12, 0.10);
         } else {
           this.speed *= 0.55;                                // fresh impact
-          this.heading = U.lerp(this.heading, proj.ang - sgn * 0.25, 0.35);
+          this.heading = U.lerp(this.heading, Math.atan2(track.ty[i], track.tx[i]) - sgn * 0.25, 0.35);
           this.stun = Math.max(this.stun, this.p.stunTime * 0.55);
           this.stats.collisions++;
         }
         this.hitFlash = 0.35;
+        this.wallSide = sgn;
+      } else if (this.wallSide && Math.abs(proj.lateral) < track.wallHalf - CAR_R * 0.65) {
+        this.wallSide = 0;
       }
     }
 
