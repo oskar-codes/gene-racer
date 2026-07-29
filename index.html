@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gene Racer — tune an AI driver</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏎️</text></svg>">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================================================================ TOP -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">🏎️</span>
+      <div>
+        <h1>Gene&nbsp;Racer</h1>
+        <p>Tune the genes. Let the AI drive.</p>
+      </div>
+    </div>
+
+    <nav class="mode-tabs" role="tablist" aria-label="Game mode">
+      <button class="mode-tab is-active" data-mode="practice" role="tab" aria-selected="true">
+        <span>🔧</span> Practice
+      </button>
+      <button class="mode-tab" data-mode="tournament" role="tab" aria-selected="false">
+        <span>🏆</span> Tournament
+      </button>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btnHelp" title="How to play (H)">❓</button>
+      <button class="icon-btn" id="btnTheme" title="Dark mode (D)">🌙</button>
+    </div>
+  </header>
+
+  <!-- =============================================================== MAIN -->
+  <main class="layout">
+
+    <!-- ------------------------------------------------------------ STAGE -->
+    <section class="stage">
+      <div class="stage-canvas-wrap">
+        <canvas id="raceCanvas"></canvas>
+        <canvas id="fxCanvas" class="fx-canvas"></canvas>
+
+        <!-- Heads-up display ------------------------------------------- -->
+        <div class="hud hud-left">
+          <div class="hud-card">
+            <span class="hud-label">Lap</span>
+            <span class="hud-value" id="hudLap">0</span>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">Time left</span>
+            <span class="hud-value" id="hudTime">1:30</span>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">Speed</span>
+            <span class="hud-value" id="hudSpeed">0</span>
+            <div class="speed-bar"><i id="hudSpeedBar"></i></div>
+          </div>
+          <div class="hud-card hud-card-wide">
+            <span class="hud-label">Best lap</span>
+            <span class="hud-value" id="hudBest">—:—</span>
+          </div>
+        </div>
+
+        <div class="hud hud-right">
+          <div class="state-chip" id="hudState" hidden><span>🏎️</span><em>Full attack</em></div>
+          <div class="board" id="liveBoard" hidden>
+            <div class="board-head">🏁 Leaderboard</div>
+            <ol class="board-list" id="boardList"></ol>
+          </div>
+        </div>
+
+        <!-- Big centred messages --------------------------------------- -->
+        <div class="stage-message" id="stageMessage" hidden></div>
+        <div class="countdown" id="countdown" hidden></div>
+
+        <!-- Podium ----------------------------------------------------- -->
+        <div class="podium-overlay" id="podiumOverlay" hidden>
+          <div class="podium-box">
+            <h2>🏆 Final Result</h2>
+            <div class="podium" id="podium"></div>
+            <ol class="podium-rest" id="podiumRest"></ol>
+            <div class="podium-actions">
+              <button class="btn btn-primary" id="btnPodiumClose">Back to the paddock</button>
+              <button class="btn" id="btnPodiumAgain">🔁 Race again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar ------------------------------------------------------ -->
+      <div class="toolbar">
+        <button class="btn btn-primary btn-run" id="btnRun"><span>▶</span> Run Test</button>
+        <button class="btn" id="btnReset"><span>⟲</span> Reset</button>
+        <button class="btn" id="btnReplay" disabled><span>🎬</span> Replay</button>
+
+        <div class="spacer"></div>
+
+        <div class="seg" role="group" aria-label="Simulation speed">
+          <button class="seg-btn is-active" data-speed="1">1×</button>
+          <button class="seg-btn" data-speed="2">2×</button>
+          <button class="seg-btn" data-speed="4">4×</button>
+        </div>
+
+        <div class="toggles" id="overlayToggles">
+          <label class="chk"><input type="checkbox" id="tgRays" checked><span>👁️ Sensors</span></label>
+          <label class="chk"><input type="checkbox" id="tgLine" checked><span>🧭 Racing line</span></label>
+          <label class="chk"><input type="checkbox" id="tgBrake" checked><span>🛑 Brake zones</span></label>
+          <label class="chk"><input type="checkbox" id="tgGhost" checked><span>👻 Ghost</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------- SIDEBAR -->
+    <aside class="sidebar">
+
+      <!-- ============================================ PRACTICE PANEL ==== -->
+      <div class="panel" id="panelPractice">
+
+        <section class="card">
+          <h2 class="card-title">👥 Your driver</h2>
+          <label class="field">
+            <span>Team name</span>
+            <input type="text" id="teamName" maxlength="22" placeholder="Team name">
+          </label>
+          <div class="style-badge" id="styleBadge"><span>⚖️</span> All-Rounder</div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">🗺️ Track</h2>
+          <div class="track-grid" id="trackGrid"></div>
+          <p class="track-blurb" id="trackBlurb"></p>
+          <div class="two-col">
+            <label class="field">
+              <span>Race length</span>
+              <select id="duration">
+                <option value="45">45 seconds</option>
+                <option value="60">60 seconds</option>
+                <option value="90" selected>90 seconds</option>
+                <option value="120">2 minutes</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Random seed</span>
+              <div class="seed-row">
+                <input type="text" id="seed" value="practice-1">
+                <button class="mini-btn" id="btnSeed" title="New random seed">🎲</button>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-title-row">
+            <h2 class="card-title">🧬 Genes</h2>
+            <span class="hint">0 – 100 · every gene is a trade-off</span>
+          </div>
+          <div id="geneList" class="gene-list"></div>
+        </section>
+
+        <section class="card card-actions">
+          <button class="btn btn-primary btn-block" id="btnRun2"><span>▶</span> Run Test</button>
+          <div class="btn-row">
+            <button class="btn" id="btnResetGenes"><span>⟲</span> Reset</button>
+            <button class="btn" id="btnRandom"><span>🎲</span> Randomize</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btnSave"><span>💾</span> Save Driver</button>
+            <button class="btn" id="btnLoad"><span>📂</span> Load Driver</button>
+          </div>
+          <button class="btn btn-accent btn-block" id="btnEnter"><span>🏆</span> Enter in Tournament</button>
+        </section>
+
+        <section class="card" id="statsCard">
+          <div class="card-title-row">
+            <h2 class="card-title">📊 Run report</h2>
+            <span class="hint" id="statsHint">Run a test to see your numbers</span>
+          </div>
+          <div class="stat-grid" id="statGrid"></div>
+          <div class="chart-block">
+            <h3>This run vs. previous run</h3>
+            <canvas id="chartCompare" class="chart"></canvas>
+          </div>
+          <div class="chart-block">
+            <h3>Speed over time</h3>
+            <canvas id="chartSpeed" class="chart chart-tall"></canvas>
+            <div class="legend">
+              <span class="legend-item"><i class="sw sw-cur"></i>this run</span>
+              <span class="legend-item"><i class="sw sw-prev"></i>previous run</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ========================================== TOURNAMENT PANEL ==== -->
+      <div class="panel" id="panelTournament" hidden>
+
+        <section class="card">
+          <h2 class="card-title">🏁 Tournament setup</h2>
+          <p class="muted small">
+            Every car uses the <strong>same track, same physics and the same fixed
+            seed</strong>. The only difference is the genes.
+          </p>
+          <div class="setup-row">
+            <div><span class="setup-label">Track</span><strong id="tourTrack">Easy Oval</strong></div>
+            <div><span class="setup-label">Length</span><strong id="tourDuration">90 s</strong></div>
+            <div><span class="setup-label">Seed</span><strong id="tourSeed">grand-final</strong></div>
+          </div>
+          <button class="btn btn-primary btn-block btn-big" id="btnStartTournament">
+            <span>🚦</span> Start Tournament
+          </button>
+        </section>
+
+        <section class="card">
+          <div class="card-title-row">
+            <h2 class="card-title">🚗 Entries <span class="pill" id="rosterCount">0</span></h2>
+            <button class="mini-btn" id="btnClearRoster" title="Remove all entries">🗑️</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btnAddCurrent"><span>➕</span> Add current</button>
+            <button class="btn" id="btnImport"><span>📥</span> Import</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btnExport"><span>📤</span> Export all</button>
+            <button class="btn" id="btnDemoField"><span>🤖</span> Add 5 bots</button>
+          </div>
+          <ul class="roster" id="rosterList"></ul>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">📋 Final classification</h2>
+          <ol class="results" id="resultsList"><li class="muted small">No race yet.</li></ol>
+        </section>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- ================================================================ MODALS -->
+<div class="modal-root" id="modalRoot" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close>✕</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+
+<!-- Modules are loaded as plain scripts so the game also works from file:// -->
+<script src="js/utils.js"></script>
+<script src="js/tracks.js"></script>
+<script src="js/genes.js"></script>
+<script src="js/car.js"></script>
+<script src="js/race.js"></script>
+<script src="js/render.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
