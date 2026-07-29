@@ -30,6 +30,7 @@ window.GR = window.GR || {};
       this.seed = opts.seed;
       this.rng = new U.Rng(opts.seed);
       this.countdownLen = opts.countdown === undefined ? 3 : opts.countdown;
+      this.collisionCars = opts.collisionCars !== false;
 
       this.cars = opts.drivers.map((d, i) => new GR.car.Car(d, i));
       this.cars.forEach((c) => c.reset(this.track, this.rng));
@@ -67,7 +68,7 @@ window.GR = window.GR || {};
       this.world.time = this.time;
 
       for (const car of this.cars) car.step(this.world, dt);
-      GR.car.resolveCarContacts(this.cars);
+      if (this.collisionCars !== false) GR.car.resolveCarContacts(this.cars);
 
       if (this.time >= this.duration) this._finish();
     }

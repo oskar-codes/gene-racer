@@ -24,6 +24,7 @@
     race: null,
     raceMode: null,           // 'practice' | 'tournament'
     overlays: { rays: true, line: true, brake: true, ghost: true },
+    tournamentCarCollisions: true,
     lastRun: null,            // stats summary of the previous practice run
     prevRun: null,            // the one before that (for the comparison chart)
     ghost: null,              // {recording:[x,y,h,...], trackId}
@@ -40,6 +41,7 @@
     app.speed = s.speed;
     app.driver.name = s.teamName;
     app.overlays = { rays: s.showRays, line: s.showLine, brake: s.showBrake, ghost: s.showGhost };
+    app.tournamentCarCollisions = s.tournamentCarCollisions !== false;
     document.documentElement.dataset.theme = s.theme;
     $('#btnTheme').textContent = s.theme === 'dark' ? '☀️' : '🌙';
 
@@ -59,6 +61,7 @@
     $('#tgLine').checked = app.overlays.line;
     $('#tgBrake').checked = app.overlays.brake;
     $('#tgGhost').checked = app.overlays.ghost;
+    $('#tgCarCollisions').checked = app.tournamentCarCollisions;
     $$('.seg-btn').forEach((b) => b.classList.toggle('is-active', +b.dataset.speed === app.speed));
 
     syncTrackUi();
@@ -306,6 +309,10 @@
 
     // Tournament panel ------------------------------------------------
     $('#btnStartTournament').addEventListener('click', startTournament);
+    $('#tgCarCollisions').addEventListener('change', (e) => {
+      app.tournamentCarCollisions = e.target.checked;
+      GR.storage.settings.patch({ tournamentCarCollisions: app.tournamentCarCollisions });
+    });
     $('#btnAddCurrent').addEventListener('click', addCurrentToRoster);
     $('#btnImport').addEventListener('click', importDialog);
     $('#btnExport').addEventListener('click', exportRoster);
@@ -466,6 +473,7 @@
       duration: app.duration,
       seed: TOURNAMENT_SEED,     // fixed: fairness beats variety here
       countdown: 3,
+      collisionCars: app.tournamentCarCollisions,
     });
     app.raceMode = 'tournament';
     app.paused = false;

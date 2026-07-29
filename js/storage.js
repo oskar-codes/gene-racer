@@ -101,6 +101,7 @@ window.GR = window.GR || {};
         showLine: true,
         showBrake: true,
         showGhost: true,
+        tournamentCarCollisions: true,
         teamName: 'My Team',
       }, read(KEY_SETTINGS, {}));
     },

@@ -55,8 +55,8 @@ window.GR = window.GR || {};
       emoji: '🟢',
       difficulty: 'Beginner',
       blurb: 'Wide, fast and forgiving. Perfect for seeing what top speed does.',
-      width: 124,          // asphalt
-      runoff: 43,          // grass shoulder on each side
+      width: 140,          // asphalt
+      runoff: 46,          // grass shoulder on each side
       theme: { grass: '#7fce6f', grassDark: '#6cb95d', sand: '#f2d492', asphalt: '#4a4e57' },
       controls: radialLoop(800, 500, 600, 370, 20, (a) => 1 + 0.03 * Math.sin(2 * a)),
       barriers: [],
@@ -67,8 +67,8 @@ window.GR = window.GR || {};
       emoji: '🟡',
       difficulty: 'Medium',
       blurb: 'Fast sweepers linked by slower corners. This is where braking starts to matter.',
-      width: 92,
-      runoff: 39,
+      width: 106,
+      runoff: 42,
       theme: { grass: '#6fc7d8', grassDark: '#5cb2c4', sand: '#ffe08a', asphalt: '#474b54' },
       controls: radialLoop(800, 500, 580, 355, 24, (a) =>
         1 + 0.10 * Math.sin(2 * a + 1.0) + 0.04 * Math.sin(4 * a + 0.4)),
@@ -83,8 +83,8 @@ window.GR = window.GR || {};
       emoji: '🟠',
       difficulty: 'Hard',
       blurb: 'Long straights broken by quick left-right flicks. Rewards smooth steering.',
-      width: 88,
-      runoff: 36,
+      width: 102,
+      runoff: 39,
       theme: { grass: '#8f8fd6', grassDark: '#7d7dc4', sand: '#ffd6e0', asphalt: '#464a53' },
       // A 4th harmonic on a long ellipse: four S-bends, two per long side.
       controls: radialLoop(800, 500, 625, 340, 32, (a) => 1 + 0.06 * Math.sin(4 * a)),
@@ -96,8 +96,8 @@ window.GR = window.GR || {};
       emoji: '🔴',
       difficulty: 'Expert',
       blurb: 'Narrow, twisty and unforgiving. Only a well-balanced driver survives here.',
-      width: 80,
-      runoff: 32,
+      width: 94,
+      runoff: 35,
       theme: { grass: '#a8894f', grassDark: '#957a45', sand: '#e8d5a3', asphalt: '#494d56' },
       controls: radialLoop(800, 500, 580, 350, 30, (a) =>
         1 + 0.07 * Math.sin(3 * a + 0.6) + 0.04 * Math.sin(5 * a + 2.1) - 0.04 * Math.cos(2 * a)),
@@ -114,8 +114,10 @@ window.GR = window.GR || {};
       emoji: '🔥',
       difficulty: 'Nightmare',
       blurb: 'Ultra-tight hairpins, sudden direction changes and packed barriers. Only the most balanced driver can survive it.',
-      width: 68,
-      runoff: 24,
+      width: 90,
+      runoff: 27,
+      // width: 68,
+      // runoff: 24,
       theme: { grass: '#b86a4b', grassDark: '#9e563b', sand: '#f1c27a', asphalt: '#3f434c' },
       controls: radialLoop(800, 500, 560, 300, 42, (a) =>
         1 + 0.16 * Math.sin(5 * a + 0.25)
